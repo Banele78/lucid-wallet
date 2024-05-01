@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        .form{
+    align-items:center;
+    justify-content: center;
+    background: #f1eeee;
+    position: fixed;
+    top: 10%;
+    left: 25%;
+    height: 480px;
+    width: 700px;
+    border-radius: 20px;
+}
+
+#button{
+    width:200px;
+    height:40px;
+     font-size:20px;
+     text-align: center;
+}
+
+button {
+    padding: 10px;
+    background-color: #007BFF;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+    </style>
+   
+</head>
+<body>
+    <div class="form">
+        <h1 id="status">
+            Status: Not Connected
+        </h1>
+      
+        <button id="button">
+            Connect Wallet
+        </button>
+      
+    </div>
+
+    <script type="module">
+     import { Lucid,Blockfrost,fromText} from "https://unpkg.com/lucid-cardano/web/mod.js"
+
+        const status = document.getElementById('status');
+        const button = document.getElementById('button');
+
+        let lucid;
+
+async function connectWallet() {
+    if (typeof window.cardano == 'undefined' || typeof window.cardano.nami == 'undefined') {
+        return;
+    }
+
+    try {
+        const api = await window.cardano.nami.enable();
+        lucid = await Lucid.new();
+        lucid.selectWallet(api);
+
+        const balanceHex = await lucid.wallet.getUtxos();//get the wallet balance
+        
+        if (balanceHex.length > 0) {
+            const firstUtxo = balanceHex[1];
+
+            // Sum up the lovelace amounts of all UTXOs
+            const totalBalanceLovelace = balanceHex.reduce((sum, utxo) => sum + BigInt(utxo.assets.lovelace), BigInt(0)); 
+                const lovelacePerAda = BigInt(1_000_000);
+                const balanceADA = totalBalanceLovelace / lovelacePerAda;// covert lovelace to ada
+                
+                status.innerHTML = "Status: Connected"// update status to connected
+                button.innerHTML = `Balance:${balanceADA} ADA`;// show balance in the connect button 
+                
+           
+        } else {
+           
+            status.innerHTML = "Error: No Utxo found in the balance information.";
+        }
+    } catch (error) {
+        console.error("Error connecting to wallet:", error);
+        const status = document.getElementById('status');
+        status.innerHTML = "Error connecting to wallet.";
+    }
+}
+
+        button.onclick = connectWallet;//button to connect the wallet
+
+    </script>
+</body>
+</html>

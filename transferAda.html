@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        .form{
+    
+    align-items:center;
+    justify-content: center;
+    background: #f1eeee;
+    position: fixed;
+    top: 10%;
+    left: 25%;
+    height: 480px;
+    width: 700px;
+    border-radius: 20px;
+
+}
+
+#button{
+    width:200px;
+    height:40px;
+     font-size:20px;
+     text-align: center;
+}
+
+label {
+    display: block;
+    margin-bottom: 10px;
+}
+
+input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 20px;
+    box-sizing: border-box;
+}
+
+button {
+    padding: 10px;
+    background-color: #007BFF;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+    </style>
+   
+</head>
+<body>
+    <div class="form">
+        <h1 id="status">
+            Status: Not Connected
+        </h1>
+
+        <div>
+            <label for="destinationAddress">Destination Address:</label>
+            <input type="text" id="destinationAddress" placeholder="Enter destination address">
+        </div>
+
+        <div>
+            <label for="ada amount">Amount in ADA:</label>
+            <input type="text" id="AdaAmount" placeholder="Enter ADA amount">
+        </div>
+        
+
+        <button id="sendButton" >
+            Send ADA
+        </button>
+
+      
+
+      
+    </div>
+
+    <script type="module">
+     import { Lucid,Blockfrost,fromText} from "https://unpkg.com/lucid-cardano/web/mod.js"
+
+        const status = document.getElementById('status');
+        const sendButton = document.getElementById('sendButton');
+        const destinationAddressInput = document.getElementById('destinationAddress');
+        const AdaAmount=document.getElementById('AdaAmount');
+        
+
+        async function sendTransaction() {
+
+            const fileName = 'blockfrost.txt'; // Specify the file name here
+
+            const response = await fetch(fileName);
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        const blockfrostAPI = await response.text();
+       
+
+        const lucid = await Lucid.new(
+            new Blockfrost(
+                "https://cardano-preprod.blockfrost.io/api/v0", 
+                blockfrostAPI // Use the fetched data to initialize Lucid
+            ),
+            "Preprod"
+        );
+  const destinationAddress = destinationAddressInput.value.trim();
+  const AdaAmountinput=AdaAmount.value.trim();
+
+  if (!destinationAddress) {
+    alert('Please enter a valid destination address.');
+    return;
+  }
+  if (!AdaAmountinput) {
+    alert('Please enter amount in ADA.');
+    return;
+  }
+
+  try {
+
+    //connect wallet
+    const api = await window.cardano.nami.enable();
+                lucid.selectWallet(api);
+ 
+
+ const send=AdaAmountinput*1000000;
+
+ //make transactions using wallet
+const tx = await lucid.newTx()
+  .payToAddress(destinationAddress, { lovelace: send })
+  
+  .complete();
+
+const signedTx = await tx.sign().complete();
+const txHash = await signedTx.submit();
+
+console.log('Transaction submission result:', txHash);
+  
+    status.innerHTML = 'Status: Transaction Sent';//update to show that the transaction was completed succesfully
+
+  } catch (error) {
+    console.error('Error sending transaction:', error);
+    
+    
+        status.innerHTML = 'Error sending transaction. Please check your wallet and try again.';
+    
+}
+}
+
+        sendButton.onclick = sendTransaction;//button to make transactions
+      
+
+    </script>
+</body>
+</html>

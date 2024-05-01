@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        .form{
+    align-items:center;
+    justify-content: center;
+    background: #f1eeee;
+    position: fixed;
+    top: 10%;
+    left: 25%;
+    height: 480px;
+    width: 700px;
+    border-radius: 20px;
+}
+
+#button{
+    width:200px;
+    height:40px;
+     font-size:20px;
+     text-align: center;
+}
+
+label {
+    display: block;
+    margin-bottom: 10px;
+}
+
+input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 20px;
+    box-sizing: border-box;
+}
+
+button {
+    padding: 10px;
+    background-color: #007BFF;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+    </style>
+</head>
+<body>
+    <div class="form">
+        <h1 id="status">Status: Not Connected</h1>
+        <div>
+            <label for="destinationAddress">destination Address</label>
+            <input type="text" id="destinationAddress" placeholder="Enter destination Address">
+        </div>
+
+        <div>
+            <label for="NoOfTokens">No of tokens</label>
+            <input type="text" id="NoOfTokens" placeholder="Enter no of tokens">
+        </div>
+
+        <div>
+            <label for="TokenName">Token Name</label>
+            <input type="text" id="TokenName" placeholder="Enter Token name">
+
+        </div>
+        <button id="senButton">Send ADA</button>
+
+    </div>
+
+    <script type="module">
+        const status=document.getElementById('status');
+        const destinationAddressInput=document.getElementById('destinationAddress');
+        const NoOfTokens=document.getElementById('NoOfTokens');
+        const TokenName=document.getElementById('TokenName');
+        const sendButton=document.getElementById('senButton');
+
+        import {Lucid,Blockfrost,fromText} from "https://unpkg.com/lucid-cardano/web/mod.js";
+
+        async function sendTransaction(){
+            const fileName='blockfrost.txt';
+
+            const response=await fetch(fileName);
+            if(!response.ok){
+                throw new Error("network response was not okay");
+            }
+            const blockfrostAPI=await response.text();
+
+            const lucid=await Lucid.new(
+                new Blockfrost(
+                    "https://cardano-preprod.blockfrost.io/api/v0",
+                    blockfrostAPI
+                ),
+                "Preprod"
+            );
+
+            const destinationAddress=destinationAddressInput.value.trim();
+            const NoOfTokensinput=NoOfTokens.value.trim();
+            const TokenNameinput=TokenName.value.trim();
+
+            if(!destinationAddress){
+                alert("Please enter a destination address");
+                return;
+            }
+
+            if(!NoOfTokensinput){
+                alert("Please No of Tokens");
+                return;
+            }
+
+            if(!TokenNameinput){
+                alert("Please enter token name");
+                return;
+            }
+
+            try{
+
+                const api= await window.cardano.nami.enable();
+                lucid.selectWallet(api);
+
+                const {paymentCredential} =lucid.utils.getAddressDetails(await lucid.wallet.address());
+
+                const mintingPolicy= lucid.utils.nativeScriptFromJson(
+                    {
+                        type:"all",
+                        scripts: [
+                            {type: "sig", keyHash:paymentCredential.hash},
+                            {
+                                type:"before",
+                                slot:lucid.utils.unixTimeToSlot(Date.now()+1000000),
+                            },
+                        ],
+                    },
+                );
+
+                const policyId= lucid.utils.mintingPolicyToId(mintingPolicy);
+                const unit=policyId+ fromText(TokenNameinput);
+
+                const tx=await lucid.newTx()
+                .mintAssets({[unit]: NoOfTokensinput})
+                .payToAddress(destinationAddress, {[unit] :NoOfTokensinput})
+                .validTo(Date.now()+200000)
+                .attachMintingPolicy(mintingPolicy)
+                .complete();
+
+                const signedTx =await tx.sign().complete();
+
+                const txhash=await signedTx.submit();
+
+                status.innerHTML='Status: Token minted succssfully';
+
+            }catch(error){
+                console.error('Error sending transaction', error);
+                status.innerHTML="Error minting or sending token";
+        
+            }
+        }
+
+        sendButton.onclick=sendTransaction;
+    </script>
+</body>
+</html>
