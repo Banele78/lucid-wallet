@@ -12,8 +12,7 @@
     <div class="head">
     <img src="coxygen.png" id="connect">
     <h1>Connect to a Nami wallet using Lucid</h1>
-   
-</div>
+    </div>
     <div class="form2">
         <p id="pconnect">Written by: Banele Nhlapo</p>
         <h1 id="status">
@@ -56,8 +55,7 @@ async function connectWallet() {
                 
                 status.innerHTML = "Status: Connected"// update status to connected
                 button.innerHTML = `Balance:${balanceADA} ADA`;// show balance in the connect button 
-                
-           
+                  
         } else {
            
             status.innerHTML = "Error: No Utxo found in the balance information.";
