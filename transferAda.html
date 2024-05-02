@@ -97,7 +97,7 @@ const tx = await lucid.newTx()
 const signedTx = await tx.sign().complete();
 const txHash = await signedTx.submit();
 
-o({txHash});
+o({txHash});// console log
   
     status.innerHTML = 'Status: Transaction Sent';//update to show that the transaction was completed succesfully
 

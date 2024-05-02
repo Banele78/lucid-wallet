@@ -50,7 +50,7 @@ async function connectWallet() {
         lucid = await Lucid.new();
         lucid.selectWallet(api);
 
-        o({lucid});
+        o({lucid});//console.log
 
         const balanceHex = await lucid.wallet.getUtxos();//get the wallet balance
         
