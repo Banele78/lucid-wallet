@@ -27,6 +27,13 @@
 
     <script type="module">
      import { Lucid,Blockfrost,fromText} from "https://unpkg.com/lucid-cardano/web/mod.js"
+     import {opt,jtest,jtrics,o,tS,tE } from './jimba.js';
+opt._O = 1;
+opt._FailsOnly = 0;
+opt._T = 0;
+opt._M = 0;
+opt._R = 0;
+opt._F = 1;
 
         const status = document.getElementById('status');
         const button = document.getElementById('button');
@@ -42,6 +49,8 @@ async function connectWallet() {
         const api = await window.cardano.nami.enable();
         lucid = await Lucid.new();
         lucid.selectWallet(api);
+
+        o({lucid});
 
         const balanceHex = await lucid.wallet.getUtxos();//get the wallet balance
         

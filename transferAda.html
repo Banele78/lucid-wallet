@@ -35,6 +35,13 @@
 
     <script type="module">
      import { Lucid,Blockfrost,fromText} from "https://unpkg.com/lucid-cardano/web/mod.js"
+     import {opt,jtest,jtrics,o,tS,tE } from './jimba.js';
+opt._O = 1;
+opt._FailsOnly = 0;
+opt._T = 0;
+opt._M = 0;
+opt._R = 0;
+opt._F = 1;
 
         const status = document.getElementById('status');
         const sendButton = document.getElementById('sendButton');
@@ -90,7 +97,7 @@ const tx = await lucid.newTx()
 const signedTx = await tx.sign().complete();
 const txHash = await signedTx.submit();
 
-console.log('Transaction submission result:', txHash);
+o({txHash});
   
     status.innerHTML = 'Status: Transaction Sent';//update to show that the transaction was completed succesfully
 
